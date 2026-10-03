@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Registration and Login</title>
+</head>
+<body>
+    <h2>Net Banking Portal</h2>
+    
+    <!-- Navigation Buttons -->
+    <button onclick="showLoginForm()">Login</button>
+    <button onclick="showRegistrationForm()">Register</button>
+    <button onclick="showStorageData()">Show Storage Data</button>
+    <button onclick="logout()">Logout</button> 
+    
+    <br><br>
+    <!-- Dynamic Container where forms will load -->
+    <div id="form-container"></div>
+
+    <p id="message"></p> 
+
+    <script> 
+        // Initial default seed users if none exist in localStorage
+        function initUsers() {
+            if (!localStorage.getItem("users")) {
+                let defaultUsers = [
+                    { username: "surya", password: "1234" },
+                    { username: "teja", password: "789" }
+                ];
+                localStorage.setItem("users", JSON.stringify(defaultUsers));
+            }
+        }
+        initUsers();
+
+        // DYNAMICALLY LOAD LOGIN FORM
+        function showLoginForm() {
+            let container = document.getElementById("form-container");
+            container.innerHTML = `
+                <h3>Login</h3>
+                <input type="text" id="username" placeholder="Enter Username"><br><br>
+                <input type="password" id="password" placeholder="Enter Password"><br><br>
+                <button onclick="login()">Submit Login</button>
+            `;
+            document.getElementById("message").innerText = "Please enter your credentials.";
+        }
+
+        // DYNAMICALLY LOAD REGISTRATION FORM
+        function showRegistrationForm() {
+            let container = document.getElementById("form-container");
+            container.innerHTML = `
+                <h3>Register New Account</h3>
+                <input type="text" id="reg-username" placeholder="Choose Username"><br><br>
+                <input type="password" id="reg-password" placeholder="Choose Password"><br><br>
+                <button onclick="registerUser()">Save Registration</button>
+            `;
+            document.getElementById("message").innerText = "Fill out the form to register.";
+        }
+
+        // REGISTER USER FUNCTION
+        function registerUser() {
+            let newUsername = document.getElementById("reg-username").value;
+            let newPassword = document.getElementById("reg-password").value;
+
+            if (!newUsername || !newPassword) {
+                document.getElementById("message").innerText = "Fields cannot be blank!";
+                return;
+            }
+
+            // Get existing users from localStorage
+            let users = JSON.parse(localStorage.getItem("users"));
+
+            // Check if user already exists
+            let existing = users.find(u => u.username === newUsername);
+            if (existing) {
+                document.getElementById("message").innerText = "Username already exists!";
+                return;
+            }
+
+            // Add new user and save back to localStorage
+            users.push({ username: newUsername, password: newPassword });
+            localStorage.setItem("users", JSON.stringify(users));
+
+            document.getElementById("message").innerText = "Registration Successful! You can now log in.";
+            showLoginForm(); // Switch back to login view automatically
+        }
+
+        // LOGIN FUNCTION 
+        function login() { 
+            let usernameInput = document.getElementById("username").value; 
+            let passwordInput = document.getElementById("password").value; 
+
+            let users = JSON.parse(localStorage.getItem("users"));
+            let validUser = users.find(u => u.username === usernameInput && u.password === passwordInput);
+
+            if (validUser) { 
+                localStorage.setItem("activeUser", usernameInput); 
+                sessionStorage.setItem("username", usernameInput); 
+                document.getElementById("message").innerText = "Login Successful! Welcome " + usernameInput; 
+            } else { 
+                document.getElementById("message").innerText = "Invalid Username or Password"; 
+            } 
+        } 
+
+        // SHOW DATA FUNCTION 
+        function showData() { 
+            let active = localStorage.getItem("activeUser");
+            let allUsers = localStorage.getItem("users");
+            document.getElementById("message").innerText = `Active: ${active || "None"} | All Users: ${allUsers}`; 
+        } 
+
+        // LOGOUT FUNCTION 
+        function logout() { 
+            sessionStorage.removeItem("username"); 
+            localStorage.removeItem("activeUser");
+            document.getElementById("message").innerText = "Logged Out."; 
+        } 
+
+        // PAGE LOAD
+        window.onload = function () {
+            showLoginForm(); // Load login form by default on start
+        }; 
+    </script> 
+</body> 
+</html>
